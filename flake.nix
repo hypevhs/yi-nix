@@ -17,11 +17,9 @@
             name = "yi-custom";
             # ./yi-config is just a copy of github:yi/example-configs/yi-vim-vty-static/
             root = ./yi-config;
-            modifier = drv: (
-              pkgs.haskell.lib.compose.addBuildTools (with pkgs."${set}"; pkgs.lib.optional returnShellEnv [
-                cabal-install
-              ]) drv
-            );
+            modifier = pkgs.haskell.lib.compose.addBuildTools (with pkgs."${set}"; pkgs.lib.optional returnShellEnv [
+              cabal-install
+            ]);
           }
         );
         yi-custom = project false;
