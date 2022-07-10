@@ -20,7 +20,7 @@
           modifier = drv: (
             pkgs.haskell.lib.addBuildTools drv (with pkgs."${set}"; if returnShellEnv then [
               cabal-install
-            ] else [])
+            ] else [ ])
           );
         }
       );
