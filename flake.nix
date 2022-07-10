@@ -1,4 +1,8 @@
 {
+  inputs = {
+    nixpkgs.url = "nixpkgs/0026c79c5509d9d170e85cab71ed7c256b4b0c7b";
+  };
+
   outputs = { self, nixpkgs, flake-utils }:
     let
       system = "x86_64-linux";
