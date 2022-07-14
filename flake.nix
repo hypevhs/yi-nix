@@ -5,28 +5,35 @@
   };
 
   outputs = { self, nixpkgs, flake-utils }:
-    flake-utils.lib.eachDefaultSystem (system:
-      let
-        set = "haskellPackages";
-        pkgs = import nixpkgs {
-          inherit system;
+    let
+      set = "haskellPackages";
+      project = returnShellEnv: system:
+        let
+          pkgs = import nixpkgs {
+            inherit system;
+          };
+        in
+        pkgs."${set}".developPackage {
+          inherit returnShellEnv;
+          name = "yi-custom";
+          # ./yi-config is just a copy of github:yi/example-configs/yi-vim-vty-static/
+          root = ./yi-config;
+          modifier = pkgs.haskell.lib.compose.addBuildTools (with pkgs."${set}"; pkgs.lib.optional returnShellEnv [
+            cabal-install
+          ]);
         };
-        project = returnShellEnv: (
-          pkgs."${set}".developPackage {
-            inherit returnShellEnv;
-            name = "yi-custom";
-            # ./yi-config is just a copy of github:yi/example-configs/yi-vim-vty-static/
-            root = ./yi-config;
-            modifier = pkgs.haskell.lib.compose.addBuildTools (with pkgs."${set}"; pkgs.lib.optional returnShellEnv [
-              cabal-install
-            ]);
-          }
-        );
-        yi-custom = project false;
-        yi-custom-dev = project true;
-      in
-      {
-        defaultPackage = yi-custom;
-        devShell = yi-custom-dev;
-      });
+    in
+    (
+      flake-utils.lib.eachDefaultSystem (system: {
+        packages.yi-custom = project false system;
+        packages.default = self.packages."${system}".yi-custom;
+        devShells.yi-custom = project true system;
+        devShells.default = self.devShells."${system}".yi-custom;
+      })
+    ) // {
+      overlays.yi-custom = final: prev: {
+        yi-custom = self.packages."${final.system}".yi-custom;
+      };
+      overlays.default = self.overlays.yi-custom;
+    };
 }
